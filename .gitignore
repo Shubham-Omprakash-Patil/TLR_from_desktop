@@ -1,0 +1,7 @@
+exp
+.vscode
+DCNv2/__pycache__
+*.pyc
+*.so
+play*.py
+cocoapi

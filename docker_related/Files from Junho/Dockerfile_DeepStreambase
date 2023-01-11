@@ -1,0 +1,205 @@
+FROM nvcr.io/nvidia/deepstream:6.1.1-devel
+
+ENV DEBIAN_FRONTEND noninteractive
+
+RUN echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null \
+    && apt-get -y update \
+    && apt-get install -y --no-install-recommends \
+        htop \
+        nano \
+        qt5-default \
+        ffmpeg \
+        # libnvidia-compute-515-server \
+        # libnvidia-decode-515-server \
+        # libnvidia-encode-515-server \
+    && apt-get -y upgrade \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+### install ROS
+RUN echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null \
+    && apt-get -y update \
+    && apt-get install -y --no-install-recommends locales \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean \
+    && locale-gen en_US en_US.UTF-8 \
+    && update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 \
+    && export LANG=en_US.UTF-8
+
+# Install ROS Package Keys
+RUN echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null \
+    && apt-get -y update \
+    && apt-get install -y --no-install-recommends \
+        curl gnupg2 apt-transport-https gnupg ca-certificates lsb-release \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean \
+    && curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key  -o /usr/share/keyrings/ros-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null
+
+RUN echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null \
+    && apt-get -y update \
+    && apt-get install -y --no-install-recommends ros-foxy-desktop \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+RUN echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null \
+    && apt-get -y update \
+    && apt-get install -y --no-install-recommends \
+        python3.8-dev \
+        python3-colcon-common-extensions \
+        python3-vcstool \
+        python3-rosdep \
+    && apt-get -y upgrade \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean \
+    && python3 -m pip install -U --no-cache-dir pip distro\
+    && python3 -m pip install -U --no-cache-dir cmake
+
+# # Configure Enviroment for ROS
+RUN echo "source /opt/ros/foxy/setup.bash" >> ~/.bashrc
+### install ROS
+
+RUN echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null \
+&& python3 -m pip install -U --no-cache-dir torch torchvision torchaudio
+# RUN echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null \
+# && python3 -m pip install -U --no-cache-dir \
+# torch==1.10.2+cu113 torchvision==0.11.3+cu113 torchaudio==0.10.2+cu113 \
+# -f https://download.pytorch.org/whl/cu113/torch_stable.html
+# torch.cuda.is_available()
+
+RUN echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null \
+    && apt-get -y update \
+    && apt-get install -y --no-install-recommends \
+        iproute2 \
+        xorg-dev \
+        can-utils \
+        protobuf-compiler \
+        python3-tk \
+    && apt-get -y upgrade \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+RUN echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null \
+    && python3 -m pip install -U --no-cache-dir \
+        pygments \
+        ipykernel \
+        numba \
+        msgpack \
+        msgpack-numpy \
+        scipy \
+        cantools \
+        python-can \
+        jupyterlab \
+        remi \
+        PySimpleGUIWeb \
+        ray \
+        torchsummary \
+        tensorboard \
+        torchviz \
+        python-dateutil \
+        imageio \
+        tqdm \
+        ipywidgets \
+        timm \
+        pandas \
+        hydra-core \
+        albumentations>=1.1.0 \
+        efficientnet_pytorch>=0.7.1 \
+        prefetch_generator>=1.0.1 \
+        pretrainedmodels>=0.7.4 \
+        seaborn>=0.11.2 \
+        tensorboardX>=2.4.1 \
+        tqdm>=4.61.2 \
+        webcolors>=1.11.1
+
+# RUN python3 -m pip uninstall -y opencv-python-headless && \
+#     apt-get -y update && \
+#     apt-get install -y --no-install-recommends \
+#         python3-opencv \
+#     && apt-get -y upgrade \
+#     && rm -rf /var/lib/apt/lists/* \
+#     && apt-get clean 
+
+# # RUN python3 -m pip install -U --no-cache-dir \
+#         # tensorflow==2.8.0
+
+# # RUN python3 -m pip install -U --no-cache-dir \
+# #         PyYAML
+
+RUN echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null \
+    && apt-get -y update \
+    && apt-key adv --fetch-key https://repo.download.nvidia.com/jetson/jetson-ota-public.asc \
+    && add-apt-repository 'deb https://repo.download.nvidia.com/jetson/x86_64/focal r34.1 main' \
+    && apt-get -y update \
+    && apt-get install -y --no-install-recommends \
+        libnvvpi2 vpi2-dev vpi2-samples \
+        vpi2-demos \
+    && apt-get install -y --no-install-recommends \
+        python3.8-vpi2 \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+RUN echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null \
+    && apt-get -y update \
+    && apt-get install -y --no-install-recommends \
+        iputils-ping \
+    && apt-get -y upgrade \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+RUN echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null \
+    && apt-get -y update \
+    && apt-get install -y libavformat58 --reinstall \
+    && apt-get install -y libavcodec58  --reinstall \
+    && apt-get install -y libavresample4  --reinstall \
+    && apt-get install -y libavutil56  --reinstall \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+RUN echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null \
+    && python3 -m pip install -U --no-cache-dir \
+        'git+https://github.com/facebookresearch/detectron2.git'
+# RUN echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null \
+#     && python3 -m pip install --no-cache-dir \
+#     detectron2==0.6 -f https://dl.fbaipublicfiles.com/detectron2/wheels/cu113/torch1.10/index.html
+
+## dataset api
+RUN echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null \
+    && python3 -m pip install -U --no-cache-dir \
+        git+https://github.com/cocodataset/panopticapi.git \
+        git+https://github.com/mcordts/cityscapesScripts.git \
+        fiftyone
+
+## mask2former requirements
+RUN echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null \
+    && python3 -m pip install -U --no-cache-dir \
+        shapely \
+        h5py \
+        submitit \
+        scikit-image \
+        pip
+
+## For NLP and SegFormer
+RUN echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null \
+    && python3 -m pip install -U --no-cache-dir \
+        torchtext==0.6.0 \
+        spacy \
+        openpyxl \
+        konlpy \
+        einops \
+    && python3 -m spacy download en_core_web_sm \
+    && python3 -m spacy download de_core_news_sm \
+    && python3 -m spacy download ko_core_news_sm  \
+    && apt-get -y update \
+    && apt-get install -y g++ openjdk-8-jdk \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+    # && python3 -m spacy download en_core_web_trf \
+    # && python3 -m spacy download de_dep_news_trf \
+    # && python3 -m spacy download ko_core_news_lg
+
+## For SegFormer
+
+RUN mkdir -p /home/junho/py_ws && echo "source /home/junho/py_ws/startup.bash" >> ~/.bashrc
+WORKDIR /home/junho/

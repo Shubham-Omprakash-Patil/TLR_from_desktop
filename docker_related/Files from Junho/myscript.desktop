@@ -1,0 +1,12 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=myscript
+Comment=myscript
+Icon=gnome-info
+Exec=bash /home/xavier-2/startup_docker.sh
+Terminal=false
+Type=Application
+Categories=
+
+X-GNOME-Autostart-enabled=true
+X-GNOME-Autostart-Delay=0

@@ -144,10 +144,10 @@ def run(detector, dataset, eval_path):
                         dt_name = cls_categories[dt_cls[d]]
                         dt_box = dt_boxes[d].astype(np.int32)
                         dt_img = img[dt_box[1]:dt_box[1]+dt_box[3], dt_box[0]:dt_box[0]+dt_box[2], :]
-                        img_name = dataset.images[i].replace('.jpg', '_{}_{}.jpg'.format(dt_name, d))
-                        img_path = os.path.join(eval_path, 'cls', gt_name, img_name)                        
+                        img_name = os.path.basename(dataset.images[i])
+                        img_name = img_name.replace('.jpg', '_{}_{}.jpg'.format(dt_name, d))                        
+                        img_path = os.path.join(eval_path, 'cls', gt_name, img_name)
                         cv2.imwrite(img_path, dt_img)
-
                 except:
                     print('Error: ', dt_cls[d],gt_cls[g])
                 try:
@@ -157,7 +157,8 @@ def run(detector, dataset, eval_path):
                         dt_name = nbs_categories[dt_nbs[d]]
                         dt_box = dt_boxes[d].astype(np.int32)
                         dt_img = img[dt_box[1]:dt_box[1]+dt_box[3], dt_box[0]:dt_box[0]+dt_box[2], :]
-                        img_name = dataset.images[i].replace('.jpg', '_{}_{}.jpg'.format(dt_name, d))
+                        img_name = os.path.basename(dataset.images[i])
+                        img_name = img_name.replace('.jpg', '_{}_{}.jpg'.format(dt_name, d))                        
                         img_path = os.path.join(eval_path, 'nbs', gt_name, img_name)                        
                         cv2.imwrite(img_path, dt_img)
                 except:
@@ -170,7 +171,7 @@ def run(detector, dataset, eval_path):
 def eval(opt):
     os.environ['CUDA_VISIBLE_DEVICES'] = opt.gpus_str    
     detector = Detector(opt)
-    dataset = MagnaAdTlDataset(opt.test_image_path, opt.anno_path, aug=False, debug=False)
+    dataset = MagnaAdTlDataset(opt.db_root, opt.test_image_path, aug=False, debug=False)
 
     # save
     model_name = opt.load_model.split('/')[-1].split('.')[0]

@@ -51,20 +51,20 @@ class opts(object):
                              choices=[18, 34, 50, 101, 152])
     self.parser.add_argument('--num_classes', type=int, default=2,
                              help='number of classes.') 
-    self.parser.add_argument('--num_features', type=int, default=2,
+    self.parser.add_argument('--num_features', type=int, default=16,
                              help='number of base feature.') 
     self.parser.add_argument('--down_ratio', type=int, default=4,
                              help='output stride. Currently only supports 4.')
 
     # dataset
-    self.parser.add_argument('--train_image_path', type=str, default='/data/training/magna2019/samples_tl_train.txt',
+    self.parser.add_argument('--train_image_path', type=str, nargs='+', default=['/data/training/magna2019_tlr/train.json', '/data/training/magna2022_tlr_synthetic/train.json'],
                              help='path to image')
-    self.parser.add_argument('--valid_image_path', type=str, default='/data/training/magna2019/samples_tl_valid.txt',
+    self.parser.add_argument('--valid_image_path', type=str, nargs='+', default=['/data/training/magna2019_tlr/valid.json', '/data/training/magna2022_tlr_synthetic/valid.json'],
                              help='path to image')
-    self.parser.add_argument('--test_image_path', type=str, default='/data/training/magna2019/samples_tl_test.txt',
-                             help='path to image')
-    self.parser.add_argument('--anno_path', type=str, default='/data/training/magna2019/box_2d_annotations',
-                             help='path to annotation')    
+    self.parser.add_argument('--test_image_path', type=str, nargs='+', default=['/data/training/magna2019_tlr/test.json'],
+                             help='path to image')                              
+    self.parser.add_argument('--db_root', type=str, nargs='+', default=['/mnt/magna-ad-db/Magna2019Database', '/mnt/magna-ad-db/magna2022synthetic/Dataset'],
+                             help='path to root folder of dataset')    
 
     # 2D detection
     self.parser.add_argument('--reg_loss', default='l1',

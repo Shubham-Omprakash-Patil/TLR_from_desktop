@@ -1,6 +1,8 @@
 import os
 import cv2
 import numpy as np
+import json
+
 from image import flip, color_aug
 from image import get_affine_transform, affine_transform
 from image import gaussian_radius, draw_umich_gaussian, draw_msra_gaussian
@@ -14,22 +16,37 @@ import imgaug.augmenters as iaa
 from imgaug.augmentables.bbs import BoundingBox, BoundingBoxesOnImage
 from imgaug.augmentables.segmaps import SegmentationMapsOnImage
 
-class MagnaAdTlDataset(Dataset):
-    def __init__(self, image_path, anno_path, aug=True, debug=False):
-        self.image_path = image_path
-        self.anno_path = anno_path        
+remap_tl_label = {
+    'green_off': 1,
+    'red_off': 2,
+    'yellow_off': 3,
+    'green_green': 4,
+    'green_red': 5,
+    'green_yellow': 6,
+    'red_green': 7,
+    'red_red': 8,
+    'red_yellow': 9,
+    'off_green': 10,
+    'off_red': 11,
+    'off_yellow': 12,
+    'off_off': 13,
+    'yellow_green': 14,
+    'yellow_red': 15,
+    'yellow_yellow': 16
+}
 
+remap_nb_label = {'3': 1, '4':2, '5': 3}
+
+
+class MagnaAdTlDataset(Dataset):
+    def __init__(self, roots, json_file_paths, aug=True, debug=False):
         self.images = {}
         idx = 0
-        if self.image_path.endswith('.txt'):
-            with open(self.image_path, 'r') as f:
-                for l in f:
-                    self.images[idx] = l.split('\n')[0]
-                    idx += 1
-            self.image_path = self.image_path.split('samples')[0] + 'rgb_images'            
-        else:
-            for l in os.listdir(image_path):
-                self.images[idx] = l 
+
+        for root, json_file_path in zip(roots, json_file_paths):        
+            image_list = json.load(open(os.path.join(json_file_path), 'r'))            
+            for f in image_list:
+                self.images[idx] = os.path.join(root, 'rgb_images', f)
                 idx += 1
 
         self.total_num_images = idx
@@ -150,13 +167,13 @@ class MagnaAdTlDataset(Dataset):
         return new_img, new_tl_box
 
     def get_item_single(self, idx):        
-        img = cv2.imread(os.path.join(self.image_path, self.images[idx]))
+        img = cv2.imread(self.images[idx])
         anno = self.get_annotations(self.images[idx])
 
         return img, anno
 
     def get_item(self, idx):        
-        img = cv2.imread(os.path.join(self.image_path, self.images[idx]))
+        img = cv2.imread(self.images[idx])
         anno = self.get_annotations(self.images[idx])
 
         imgs = []
@@ -184,28 +201,31 @@ class MagnaAdTlDataset(Dataset):
         #     return [none_imgs[-1]], [none_annos[-1]]
 
     def get_annotations(self, image_name):
-        file_name = image_name.split('.')[0] + '.txt'
-        anno_file = open(os.path.join(self.anno_path, file_name), 'r')
-        
+        p = image_name.replace('rgb_images','gt').replace('_rgb.jpg', '_gt.json')        
+
         bbs = []
-        for l in anno_file.readlines():
-            if 'traffic_light' in l:
-                items = l.split(',')
-                try:
-                    cls = int(items[4])
-                    nb = int(items[5])
-                    x1 = int(items[6])
-                    y1 = int(items[7])
-                    x2 = int(items[8])
-                    y2 = int(items[9])
+        with open(p, 'r') as infile:
+            data = json.load(infile)        
+            
+            for obj in data['objects']:                
+                if obj['label'] == 'traffic light':
+                    pts = np.array(obj['polygon'])
+                    x1 = pts[:,0].min()
+                    x2 = pts[:,0].max()
+                    y1 = pts[:,1].min()
+                    y2 = pts[:,1].max()                
+                    c_bulb = obj['attribute_1'] # green/red/yellow/off
+                    c_arrow = obj['attribute_2'] # green/red/yellow/off
+                    c_num = obj['attribute_3'] # 3/4/5
+                    
+                    tl_label = '{}_{}'.format(c_bulb,c_arrow)
+                    cls = remap_tl_label[tl_label]
+                    nb = remap_nb_label[c_num]
 
                     if cls >= 13:
                         cls = 13
 
-                    bbs.append(np.array([1, cls, nb, x1, y1, x2, y2]))       
-                except:
-                    print(' error in sample retrieval: {}'.format(os.path.join(self.anno_path, file_name)))
-                    continue
+                    bbs.append(np.array([1, cls, nb, x1, y1, x2, y2]))
         
         return np.array(bbs)
 

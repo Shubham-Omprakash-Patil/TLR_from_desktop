@@ -29,10 +29,7 @@ def main(opt):
     
     # options
     learning_rate = opt.lr
-    layers = opt.layers
-    train_image_path = opt.train_image_path
-    valid_image_path = opt.valid_image_path
-    anno_path = opt.anno_path    
+    layers = opt.layers    
     batch_size = opt.batch_size    
     num_epochs = opt.num_epochs
 
@@ -67,10 +64,10 @@ def main(opt):
     optimizer = torch.optim.Adam(model.parameters(), learning_rate)    
     
     # init dataloader
-    dataset = MagnaAdTlDataset(train_image_path, anno_path, aug=True, debug=False)
-    train_dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=48)
-    dataset = MagnaAdTlDataset(valid_image_path, anno_path, aug=False, debug=False)
-    valid_dataloader = DataLoader(dataset, batch_size=1, shuffle=False, num_workers=48)
+    dataset = MagnaAdTlDataset(opt.db_root, opt.train_image_path, aug=True, debug=False)
+    train_dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=12)
+    dataset = MagnaAdTlDataset(opt.db_root, opt.valid_image_path, aug=False, debug=False)
+    valid_dataloader = DataLoader(dataset, batch_size=1, shuffle=False, num_workers=12)
 
     start_epoch = 0
     # load model

@@ -1,0 +1,2 @@
+docker volume create tlr_volume
+docker run --ipc=host -it -P -v /mnt:/ws_data/mnt/ -v /data:/ws_data/data/ -v tlr_volume:/tlr_volume --network host -e DISPLAY=$DISPLAY --name tlr_1 --shm-size=5gb tlr_monday:1
